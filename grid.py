@@ -14,31 +14,65 @@ red_light = (255, 50, 50)
 
 
 
-#intialize pygame
-py.init()
-key = None
-py.display.set_caption("PATH ALGORITHMS")
-myfont = py.font.SysFont('Comic Sans MS', 30) 
-smallfont = py.font.SysFont('Comic Sans MS', 20)   
-screen = py.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-clock = py.time.Clock()
+
+
 
 
 
 class Grid:
     
 
-    def __init__(self,rows, cols, window, width, height):
+    def __init__(self,rows, cols, window=None, width=None, height=None):
         self.rows = rows
         self.cols = cols
         self.window = window
         self.width = width
         self.height = height
         self.selected = None
-
+        self.cubes = [[Cubes(i, j) for j in range(cols)] for i in range(rows)]
         self.x = 0
         self.y = 0
-        self.dif = self.width / self.cols
+        if self.width is not None:
+            self.dif = self.width / self.cols
+        
+        count = 0
+        #making the grid as a graph with connections with each other when the grid is initialized
+        for i in range(rows):
+            for j in range(cols):
+                
+                self.cubes[i][j].make_values(count)
+                count+=1
+                
+        for i in range(rows):
+            for j in range(cols):
+                if ( rows-1) > i > 0 and 0 < j < (cols-1):
+                    self.cubes[i][j].make_connections(left=self.cubes[i][j-1], right=self.cubes[i][j+1], up=self.cubes[i-1][j], down=self.cubes[i+1][j])
+            
+                elif i == 0:
+                    if j == 0:
+                        self.cubes[i][j].make_connections(right=self.cubes[i][j+1], down=self.cubes[i+1][j] )
+                    elif j == cols - 1:
+                        self.cubes[i][j].make_connections(left=self.cubes[i][j-1], down=self.cubes[i+1][j] )
+                    else:
+                        self.cubes[i][j].make_connections(left=self.cubes[i][j-1], right=self.cubes[i][j+1], down=self.cubes[i+1][j] ) 
+                elif i == (rows-1):
+                    if j == 0:
+                        self.cubes[i][j].make_connections(right=self.cubes[i][j+1], up=self.cubes[i-1][j] )  
+                    elif j == cols - 1:
+                        self.cubes[i][j].make_connections(left=self.cubes[i][j-1], up=self.cubes[i-1][j] )
+                    else:
+                        self.cubes[i][j].make_connections(left=self.cubes[i][j-1], right=self.cubes[i][j+1], up=self.cubes[i-1][j] ) 
+                    
+                else:
+                    if j == 0:
+                        self.cubes[i][j].make_connections(right=self.cubes[i][j+1], up=self.cubes[i-1][j], down=self.cubes[i+1][j] )
+                    else:
+                        self.cubes[i][j].make_connections(left=self.cubes[i][j-1], up=self.cubes[i-1][j], down=self.cubes[i+1][j] )
+            
+                    
+        
+        
+        
     def get_cord(self,pos):
         #get position of the mouse when clicked in the box
 
@@ -46,6 +80,8 @@ class Grid:
        
         click_y = pos[1] // self.dif
         return (click_x, click_y)
+
+
 
     def draw(self):
         #the grid is drawn 
@@ -58,17 +94,57 @@ class Grid:
     
     
     def select_start(self, row, col):
-        
         py.draw.rect(self.window, (255, 0, 0), (row * self.dif, col * self.dif, self.dif, self.dif))
+        
+        
+        
 
     def select_end(self, row, col):
         py.draw.rect(self.window, (255, 153, 153), (row * self.dif, col * self.dif, self.dif, self.dif) )
+        
+        
+        
+        
+    def get_cubes(self):
+        return self.cubes
+    
+    
+    
+    
 
+    
 
-
-
-
-
+class Cubes:
+    
+    
+    
+    def __init__(self, row, column):
+        self.row = row
+        self.column = column
+        self.value = None
+        
+    
+    def make_values(self, value):
+        self.value = value
+    
+    def make_connections(self, left=None, right=None, up=None, down=None):
+        self.left = left
+        self.right = right
+        self.up = up
+        self.down = down
+    
+    
+    def value(self):
+        return self.value 
+        
+    def print_row_col(self):
+        return self.row, self.column   
+        
+    def show_connections(self):
+        # print(f"row={self.row}, column={self.column}, right={self.right}, left={self.left}, up={self.up}, down={self.down}, value={self.value}")
+        return [self.left, self.right, self.up, self.down]
+    
+        
 
 
 
@@ -79,13 +155,16 @@ class Grid:
 #h=height of the rectangle
 #ic=inactive button color
 #ac=if button is pressed
-def button (msg, x, y, w, h, ic, ac, action=None):
+def button (msg, x, y, w, h, ic, ac, action=None, parameters=None):
     mouse = py.mouse.get_pos()
     click = py.mouse.get_pressed()
     if x + w > mouse[0] > x and y + h > mouse[1] > y:
         py.draw.rect(screen, ac, (x, y, w, h))
         if click[0] == 1 and action != None:
-            action()
+            if parameters:
+                action(parameters)
+            else:
+                action()
         
     else:
         py.draw.rect(screen, ic, (x, y, w, h))
@@ -97,8 +176,61 @@ def button (msg, x, y, w, h, ic, ac, action=None):
    
 
 
+
+
+
+#the path algorithms
+
+def DFS_starter(window, s, e, rows, cols):
+   
+
+        
+    visited = [False for i in range(rows*cols)]
+
+    stack = []
+
+    
+    path = DFS(window, visited, s, e, stack)
+    return path
+    
+    
+def DFS(window, visited, s, e, stack):
+    parentMap = {} #for storing the vertex parent -- where the path came from to that node
+    stack.append(s)
+    while(len(stack)):
+        s = stack[-1]
+        stack.pop()
+        
+        
+        if s.value== e.value:
+            break
+        
+        
+        if ( not visited[s.value]):        
+            # print(s.value, end=" ")
+            visited[s.value] = True
+        for node in s.show_connections():
+            if node:
+                if ( not visited[node.value]):
+                    stack.append(node)
+                    parentMap[node] = s
+            
+
+    return parentMap
+
+
+
+
+
+
+def refresh():
+    loop()
+
+
+
+
 def intro():
-    intro = True
+    
     
 
     while True:
@@ -115,85 +247,193 @@ def intro():
         textRect.center = (WINDOW_WIDTH/2), (WINDOW_HEIGHT/16)
         screen.blit(textSurface, textRect)
         
+        
+        
+        
+        
+        
         smalltext = smallfont.render("double press mouse to continue", True, black)
         smaltextRect = smalltext.get_rect()        
         smaltextRect.center = (WINDOW_WIDTH/2), (WINDOW_HEIGHT-30)
         screen.blit(smalltext, smaltextRect)       
         
         
-        button("DFS", 250, 450, 100, 50, green, light_green, loop)#the main loop starts from here
         
+        
+        
+        
+        button("DFS", 250, 450, 100, 50, green, light_green, loop)
         
         py.display.update()
         clock.tick(15)
         
 
-#start function
-
 
 
 def loop():
     
-    gridSurface = py.Surface((1201, 600))
-    
-    
-    grid = Grid(100, 100, gridSurface, 1201, 613 )
-    
+    gridSurface = py.Surface((1201, 613))
+    state = True
+    rows = 100
+    cols = 100
+    grid = Grid(rows, cols, gridSurface, 1201, 613 )
+    clicked = None
     run = True
+    once = True
+    complete_first_time = False
     end = False
     start = False
+    find = False
+    starting_position = None
+    end_position = None
+    
+    
+    
     while run:
         
-        clicked = None
         
+        
+        
+        
+            
+        #drawing the grid
         grid.draw()
         screen.fill(white)
-        button("Start position", 100, 610, 200, 50, red, red_light)
         
-        button("End position", 800, 610, 200, 50, red, red_light)
+        
+              
+        button("Start position", 120, 610, 200, 50, red, red_light)
+        
+        button("End position", 850, 610, 200, 50, red, red_light)
+        
+        
         for event in py.event.get():
             if event.type == py.QUIT:
                 run = False
             if event.type == py.MOUSEBUTTONDOWN:
                 pos = py.mouse.get_pos()
                 clicked = grid.get_cord(pos)
-                
-                
+        
+        
         
         
                 
         
-        
-        if clicked:
-            print(pos)
-            if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
-                start = True
-                end = False
-            if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
-                start = False
-                end = True
-            print(start)
+        if state: #pause button imitator
+            # if some one of the button is clicked then the it performs the action related to it
             
-            if start:
-                grid.select_start(clicked[0], clicked[1])
-                screen.blit(gridSurface, (0, 0)) 
-                py.display.update()  
-            elif end:
-                grid.select_end(clicked[0], clicked[1]) 
-                screen.blit(gridSurface, (0, 0)) 
-                py.display.update()    
-            else:
-                screen.blit(gridSurface, (0, 0)) 
-                py.display.update()     
-                    
-        
-        
-        
-        
+            if clicked:
                 
+                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                    start = True
+                    
+                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                    start = False
+                    end = True
+                if end_position and starting_position:
+                    if not once:
+                        if (500 + 200) > pos[0] > 500 and (610 + 50) > pos[1] > 610:
+                            find = True
+                            end = False
+                            
+                
+            if start: # if start is clicked then we can then select some box in the grid and it will be highlighted in red color
+                    grid.select_start(clicked[0], clicked[1])
+                    starting_position = clicked
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()   
+                        
+            elif end: # likewise for the end position but in pink color
+                    grid.select_end(clicked[0], clicked[1]) 
+                    end_position = clicked
+                    if starting_position:
+                        grid.select_start(starting_position[0], starting_position[1])
+                    
+                            
+                    button("Find path", 500, 610, 200, 59, red, red_light)
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()  
+            elif find: # the path finding occurs in here
+                    cubes_ = grid.get_cubes()
+                    
+                    grid.select_start(starting_position[0], starting_position[1])
+                    # the function returns the dictionary of the path that it took to get the end position but is in reverse order
+                    
+                    path = DFS_starter( gridSurface, cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
+                    curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+                    grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+                    curr = path[curr]
+                    diff = WINDOW_WIDTH // cols
+                    # to highlight the path 
+                    while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                            
+                            py.draw.rect(gridSurface, (255, 255, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff))
+                            if not complete_first_time:
+                                screen.blit(gridSurface, (0, 0))
+                                py.display.update()
+                                py.time.delay(20)
+                            curr = path[curr]
+                    state = False
+                    
+                    
+                    if not complete_first_time:  
+                        complete_first_time = True
+                        
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+        
+        
+        else:# same function but it just shows the same path but it will show all the path at once 
+            cubes_ = grid.get_cubes()
+            curr = None        
+            grid.select_start(starting_position[0], starting_position[1])
+            path = DFS_starter( gridSurface, cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
+            curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+            grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+            curr = path[curr]
+            diff = WINDOW_WIDTH // cols
+            while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                    
+                    py.draw.rect(gridSurface, (255, 255, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff))
+                    if not complete_first_time:
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                        
+                    curr = path[curr]
+            button("Refresh", 500, 610, 200, 59, red, red_light, refresh )
+            
+            screen.blit(gridSurface, (0, 0))               
+            py.display.update()
+                
+                
+                
+                
+                
+                
+        if once:
+            once = False
+            screen.blit(gridSurface, (0, 0))
+            py.display.update()  
+                 
+        
+         
         clock.tick(60)
     py.quit()
     quit()
 
+
+
+
+
+
+
 if __name__ == "__main__":
+    #intialize pygame
+    py.init()
+    key = None
+    py.display.set_caption("PATH ALGORITHMS")
+    myfont = py.font.SysFont('Comic Sans MS', 30) 
+    smallfont = py.font.SysFont('Comic Sans MS', 20)   
+    screen = py.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    clock = py.time.Clock()
     intro()    
