@@ -1,3 +1,5 @@
+
+from queue import Queue
 import pygame as py
 import time
 #window size 
@@ -33,7 +35,7 @@ class Grid:
         self.x = 0
         self.y = 0
         if self.width is not None:
-            self.dif = self.width // 100
+            self.dif = self.width // cols
         
         count = 0
         #making the grid as a graph with connections with each other when the grid is initialized
@@ -89,7 +91,7 @@ class Grid:
         for i in range((self.rows+1)):
             
             py.draw.line(self.window, (255, 255, 255), (self.x, i * self.dif ), (self.width, i * self.dif), 1)
-            py.draw.line(self.window, (244, 244, 244), (i * self.dif, self.y), (i * self.dif, self.height-5), 1)
+            py.draw.line(self.window, (244, 244, 244), (i * self.dif, self.y), (i * self.dif, self.height), 1)
     
     
     
@@ -225,8 +227,7 @@ def DFS(window, visited, s, e, stack):
 
 
 
-def refresh():
-    dfs_loop()
+
 
 
 
@@ -263,7 +264,7 @@ def intro():
         
         
         
-        button("BFS", 300, 450, 100, 50, green, light_green, )
+        button("BFS", 300, 450, 100, 50, green, light_green, BFS_loop )
         
         
         button("DFS", 150, 450, 100, 50, green, light_green, dfs_loop)
@@ -274,13 +275,227 @@ def intro():
 
 
 
+def BFS(s, e, visited, q):
+    visited[s.value] = True
+    traversal = []
+    parentMap = {}
+    q.put(s)
+    traversal.append(s)
+    
+    while not q.empty():
+        v = q.get()
+        if v.value == e.value:
+        
+            break
+        
+        for node in v.show_connections():
+            
+            if node:
+                
+                if not visited[node.value] :
+                    visited[node.value] = True
+                    traversal.append(node)
+                    # print(node.value, node.print_row_col())
+                    q.put(node)
+                    parentMap[node] = v
+        
+    
+    return parentMap, traversal
+
+def BFS_starter(window, s, e, rows, cols):
+    q = Queue()
+    visited = [False for i in range(rows*cols)]        
+    path = BFS(s, e, visited, q)
+    return path
+
+
+
+
+
+
+
+def BFS_loop():
+    gridSurface = py.Surface((601, 600))
+    state = True
+    rows = 50
+    cols = 50
+    grid = Grid(rows, cols, gridSurface, 601, 600 )
+    clicked = None
+    run = True
+    once = True
+    complete_first_time = False
+    end = False
+    start = False
+    find = False
+    starting_position = None
+    end_position = None
+    
+    
+    
+    while run:
+        
+        
+        
+        
+        
+            
+        #drawing the grid
+        grid.draw()
+        screen.fill(white)
+        
+        
+              
+        button("Start position", 120, 610, 200, 50, red, red_light)
+        
+        button("End position", 850, 610, 200, 50, red, red_light)
+        
+        
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                run = False
+            if event.type == py.MOUSEBUTTONDOWN:
+                pos = py.mouse.get_pos()
+                clicked = grid.get_cord(pos)
+                
+        
+        
+        
+        
+                
+        
+        if state: #pause button imitator
+            
+            # if one of the button is clicked then the it performs the action related to it
+            if clicked:
+                
+                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                    start = True
+                    
+                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                    start = False
+                    end = True
+                if end_position and starting_position:
+                    if not once:
+                        if (500 + 200) > pos[0] > 500 and (610 + 50) > pos[1] > 610:
+                            find = True
+                            end = False
+                            
+                
+            if start: # if start is clicked then we can then select some box in the grid and it will be highlighted in red color
+                    grid.select_start(clicked[0], clicked[1])
+                    starting_position = clicked
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()   
+                        
+            elif end: # likewise for the end position but in pink color
+                    grid.select_end(clicked[0], clicked[1]) 
+                    end_position = clicked
+                    if starting_position:
+                        grid.select_start(starting_position[0], starting_position[1])
+                    
+                            
+                    button("Find path", 500, 610, 200, 59, red, red_light)
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()  
+            elif find: # the path finding occurs in here
+                    cubes_ = grid.get_cubes()
+                    
+                    
+                    
+                    diff = WINDOW_WIDTH // 100
+                    # the function returns the dictionary of the path that it took to get the end position but is in reverse order and also the traversal path
+                    path, traversal = BFS_starter( gridSurface, cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
+                    for i in traversal: #shows the traversal
+                        b = py.draw.rect(screen, (255, 50, 100), (i.print_row_col()[0] * diff, i.print_row_col()[1] * diff, diff, diff))
+                        py.display.update(b)
+                        py.time.delay(3)
+                    grid.select_start(starting_position[0], starting_position[1])
+                    grid.select_end(end_position[0], end_position[1])  
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()
+                    py.time.delay(10)
+                
+                    
+                    # starting node
+                    curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+                    
+                    curr = path[curr]
+                    
+                    grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+                    # to highlight the path 
+                    while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                            
+                            bo = py.draw.rect(gridSurface, (255, 0, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                            
+                            
+                            if not complete_first_time: 
+                                
+                                screen.blit(gridSurface, (0, 0))
+                                py.display.update(bo)
+                                py.time.delay(10)
+                                    
+                            curr = path[curr]
+                    state = False # to pause the loop---kind of!
+                    
+                    
+                    if not complete_first_time:  
+                        complete_first_time = True        
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+            
+        else:# same function but it just shows the same path but it will show all the path at once 
+                    
+            grid.select_start(starting_position[0], starting_position[1])
+            
+            curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+            grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+            curr = path[curr]
+            diff = WINDOW_WIDTH // 100
+            while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                    
+                    py.draw.rect(gridSurface, (255, 0, 100), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                    
+                        
+                    curr = path[curr]
+            button("Refresh", 500, 610, 200, 59, red, red_light, BFS_loop )
+            
+            screen.blit(gridSurface, (0, 0))               
+            py.display.update()
+                
+                
+                
+                
+                
+                
+        if once:
+            once = False
+            screen.blit(gridSurface, (0, 0))
+            py.display.update()  
+                 
+        
+         
+        clock.tick(60)
+    py.quit()
+    quit()
+
+
+
+
+
+
+
+
+
+
+
+
 def dfs_loop():
     
-    gridSurface = py.Surface((1201, 600))
+    gridSurface = py.Surface((601, 600))
     state = True
-    rows = 100
+    rows = 50
     cols = 50
-    grid = Grid(rows, cols, gridSurface, 1201, 600 )
+    grid = Grid(rows, cols, gridSurface, 601, 600 )
     clicked = None
     run = True
     once = True
@@ -408,7 +623,7 @@ def dfs_loop():
                     
                         
                     curr = path[curr]
-            button("Refresh", 500, 610, 200, 59, red, red_light, refresh )
+            button("Refresh", 500, 610, 200, 59, red, red_light, dfs_loop )
             
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
