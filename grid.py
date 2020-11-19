@@ -229,9 +229,6 @@ def DFS(window, visited, s, e, stack):
 
 
 
-
-
-
 def intro():
     
     
@@ -268,6 +265,8 @@ def intro():
         
         
         button("DFS", 150, 450, 100, 50, green, light_green, dfs_loop)
+        
+        button("Birdirectional", 500, 450, 150, 50, green, light_green, Bidirectional_loop)
         
         py.display.update()
         clock.tick(15)
@@ -307,6 +306,316 @@ def BFS_starter(window, s, e, rows, cols):
     visited = [False for i in range(rows*cols)]        
     path = BFS(s, e, visited, q)
     return path
+
+
+
+
+
+
+
+
+
+
+def Bidirectional_traversal( s, e, rows, cols):
+    q = Queue()
+    z = Queue()
+    q.put(s)
+    z.put(e)
+    traversal = []
+    traversal.append(s)
+    traversal.append(e)
+    parentMap_start = {}
+    parentMap_end = {}
+    visited_end = [False for i in range(rows * cols)]
+    visited_start = [False for i in range(rows * cols)]
+    visited_end[e.value] = True
+    visited_start[s.value] = True
+    flag = True
+    intersection = None
+    while not q.empty() and not z.empty():
+        v = q.get()
+        w = z.get()
+        if not flag:
+            break
+        
+        for node in v.show_connections():
+            if node:
+                if not visited_start[node.value]:
+                    
+                    visited_start[node.value] = True
+                    if visited_end[node.value]:
+                        intersection = node
+                        flag = False
+                        
+                    traversal.append(node)
+                    # print(node.value)
+                    q.put(node)
+                    parentMap_start[node] = v
+                
+        if flag:     
+            for node in w.show_connections():
+                if node:
+                    if not visited_end[node.value]: 
+                        
+                        visited_end[node.value] = True
+                        if visited_start[node.value]:
+                            intersection = node
+                            flag = False
+                        traversal.append(node)
+                        # print(node.value)
+                        z.put(node)
+                        parentMap_end[node] = w
+                
+                    
+                
+    return  (parentMap_start, parentMap_end), traversal, intersection
+
+
+
+
+def Bidirectional_loop():
+    gridSurface = py.Surface((601, 600))
+    state = True
+    rows = 50
+    cols = 50
+    grid = Grid(rows, cols, gridSurface, 601, 600 )
+    clicked = None
+    run = True
+    once = True
+    complete_first_time = False
+    end = False
+    start = False
+    find = False
+    starting_position = None
+    end_position = None
+    
+    
+    
+    while run:
+        
+        
+        
+        
+        
+            
+        #drawing the grid
+        grid.draw()
+        screen.fill(white)
+        
+        
+              
+        button("Start position", 120, 610, 200, 50, red, red_light)
+        
+        button("End position", 850, 610, 200, 50, red, red_light)
+        
+        
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                run = False
+            if event.type == py.MOUSEBUTTONDOWN:
+                pos = py.mouse.get_pos()
+                clicked = grid.get_cord(pos)
+                
+        
+        
+        
+        
+                
+        
+        if state: #pause button imitator
+            
+            # if one of the button is clicked then the it performs the action related to it
+            if clicked:
+                
+                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                    start = True
+                    
+                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                    start = False
+                    end = True
+                if end_position and starting_position:
+                    if not once:
+                        if (500 + 200) > pos[0] > 500 and (610 + 50) > pos[1] > 610:
+                            find = True
+                            end = False
+                            
+                
+            if start: # if start is clicked then we can then select some box in the grid and it will be highlighted in red color
+                    grid.select_start(clicked[0], clicked[1])
+                    starting_position = clicked
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()   
+                        
+            elif end: # likewise for the end position but in pink color
+                    grid.select_end(clicked[0], clicked[1]) 
+                    end_position = clicked
+                    if starting_position:
+                        grid.select_start(starting_position[0], starting_position[1])
+                    
+                            
+                    button("Find path", 500, 610, 200, 59, red, red_light)
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()  
+            elif find: # the path finding occurs in here
+                    cubes_ = grid.get_cubes()
+                    
+                    
+                    
+                    diff = WINDOW_WIDTH // 100
+                    # the function returns the dictionary of the path that it took to get the end position but is in reverse order and also the traversal path
+                    path, traversal, intersection = Bidirectional_traversal( cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
+                    for i in traversal: #shows the traversal
+                        b = py.draw.rect(screen, (255, 50, 100), (i.print_row_col()[0] * diff, i.print_row_col()[1] * diff, diff, diff))
+                        py.display.update(b)
+                        py.time.delay(3)
+                    grid.select_start(starting_position[0], starting_position[1])
+                    grid.select_end(end_position[0], end_position[1])  
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()
+                    py.time.delay(10)
+                
+                    
+                    # starting node
+                    
+                    
+                    curr = path[0] [intersection]
+                    
+                    grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+                    # to highlight the path 
+                    
+                    bo = py.draw.rect(gridSurface, (255, 0, 0), (intersection.print_row_col()[0] * diff, intersection.print_row_col()[1] * diff, diff, diff), 1)
+                    py.display.update(bo)
+                    while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                            
+                            bo = py.draw.rect(gridSurface, (255, 0, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                            
+                         
+                            if not complete_first_time: 
+                                
+                                screen.blit(gridSurface, (0, 0))
+                                py.display.update(bo)
+                                py.time.delay(10)
+                                    
+                            curr = path[0] [curr]
+                    
+                    
+                    
+                    
+                    
+                    
+                    curr = path[1] [intersection] 
+                    
+                    while curr != cubes_[ int( end_position[0]  ) ]  [ int( end_position[1]) ]:
+                            
+                            bo = py.draw.rect(gridSurface, (255, 0, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                            
+                            
+                            
+                            if not complete_first_time: 
+                                
+                                screen.blit(gridSurface, (0, 0))
+                                py.display.update(bo)
+                                py.time.delay(10)
+                                    
+                            curr = path[1] [curr]
+                    
+                    
+                    state = False # to pause the loop---kind of!
+                    
+                    
+                    if not complete_first_time:  
+                        complete_first_time = True        
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+            
+        else:# same function but it just shows the same path but it will show all the path at once 
+            
+            grid.select_start(starting_position[0], starting_position[1])
+            curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+            grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+            
+                    
+            curr = path[0] [intersection]
+            
+            
+            # to highlight the path 
+            bo = py.draw.rect(gridSurface, (255, 0, 0), (intersection.print_row_col()[0] * diff, intersection.print_row_col()[1] * diff, diff, diff), 1)
+            py.display.update(bo)
+            while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                    
+                    bo = py.draw.rect(gridSurface, (255, 0, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                    
+                    
+                    
+                    if not complete_first_time: 
+                        
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update(bo)
+                        py.time.delay(10)
+                            
+                    curr = path[0] [curr]
+            
+            
+            
+            
+            
+            
+            curr = path[1] [intersection] 
+            
+            while curr != cubes_[ int( end_position[0]  ) ]  [ int( end_position[1]) ]:
+                    
+                    bo = py.draw.rect(gridSurface, (255, 0, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                    
+                    
+                    
+                    if not complete_first_time: 
+                        
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update(bo)
+                        py.time.delay(10)
+                            
+                    curr = path[1] [curr]
+            
+            
+            state = False # to pause the loop---kind of!
+            
+            
+            if not complete_first_time:  
+                complete_first_time = True        
+                screen.blit(gridSurface, (0, 0))
+                py.display.update()
+            
+            
+                    
+                    
+            button("Refresh", 500, 610, 200, 59, red, red_light, Bidirectional_loop )
+            
+            screen.blit(gridSurface, (0, 0))               
+            py.display.update()
+                
+                
+                
+                
+                
+                
+        if once:
+            once = False
+            screen.blit(gridSurface, (0, 0))
+            py.display.update()  
+                 
+        
+         
+        clock.tick(60)
+    py.quit()
+    quit()
+
+
+
+
+
+    
+
+
 
 
 
