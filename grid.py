@@ -1,5 +1,5 @@
 
-from queue import Queue
+from queue import Queue, PriorityQueue
 import pygame as py
 import time
 #window size 
@@ -181,50 +181,10 @@ def button (msg, x, y, w, h, ic, ac, action=None, parameters=None):
 
 
 
-#the path algorithms
-
-def DFS_starter(window, s, e, rows, cols):
-   
-
-        
-    visited = [False for i in range(rows*cols)]
-
-    stack = []
-
-    
-    path = DFS(window, visited, s, e, stack)
-    return path
-    
-    
-def DFS(window, visited, s, e, stack):
-    parentMap = {} #for storing the vertex parent -- where the path came from to that node
-    stack.append(s)
-    traversal = []
-    while(len(stack)):
-        s = stack[-1]
-        stack.pop()
-        
-        
-        if s.value== e.value:
-            break
-        
-        
-        if ( not visited[s.value]):        
-            # print(s.value, end=" ")
-            traversal.append(s)
-            visited[s.value] = True
-        for node in s.show_connections():
-            if node:
-                if ( not visited[node.value]):
-                    stack.append(node)
-                    parentMap[node] = s
-            
-
-    return parentMap, traversal
 
 
 
-
+#####################first menu loop########################
 
 
 
@@ -268,51 +228,21 @@ def intro():
         
         button("Birdirectional", 500, 450, 150, 50, green, light_green, Bidirectional_loop)
         
+        button("A Star", 700, 450, 100, 50, green, light_green, a_star_loop)
+        
         py.display.update()
         clock.tick(15)
         
-
-
-
-def BFS(s, e, visited, q):
-    visited[s.value] = True
-    traversal = []
-    parentMap = {}
-    q.put(s)
-    traversal.append(s)
-    
-    while not q.empty():
-        v = q.get()
-        if v.value == e.value:
-        
-            break
-        
-        for node in v.show_connections():
-            
-            if node:
-                
-                if not visited[node.value] :
-                    visited[node.value] = True
-                    traversal.append(node)
-                    # print(node.value, node.print_row_col())
-                    q.put(node)
-                    parentMap[node] = v
-        
-    
-    return parentMap, traversal
-
-def BFS_starter(window, s, e, rows, cols):
-    q = Queue()
-    visited = [False for i in range(rows*cols)]        
-    path = BFS(s, e, visited, q)
-    return path
+#####################menu loop ends here####################
 
 
 
 
-
-
-
+##############################
+############################
+########################
+########################
+###BIDIRECTIONAL PATH ALGORITHM##########################
 
 
 
@@ -589,7 +519,7 @@ def Bidirectional_loop():
                     
                     
             button("Refresh", 500, 610, 200, 59, red, red_light, Bidirectional_loop )
-            
+            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
@@ -609,12 +539,57 @@ def Bidirectional_loop():
     py.quit()
     quit()
 
+###############Bidirectional path visualization ends here################################
 
 
 
 
+
+
+####      #######      ########      #############################################
+#### #### ####### ############ ###################################################
+####    #########    ###########   ###############################################
+#### #### ####### ################# ##############################################
+####     ######## ############     ###############################################
+
+
+
+
+def BFS(s, e, visited, q):
+    visited[s.value] = True
+    traversal = []
+    parentMap = {}
+    q.put(s)
+    traversal.append(s)
     
+    while not q.empty():
+        v = q.get()
+        if v.value == e.value:
+        
+            break
+        
+        for node in v.show_connections():
+            
+            if node:
+                
+                if not visited[node.value] :
+                    visited[node.value] = True
+                    traversal.append(node)
+                    # print(node.value, node.print_row_col())
+                    q.put(node)
+                    parentMap[node] = v
+        
+    
+    return parentMap, traversal
 
+
+
+
+def BFS_starter(window, s, e, rows, cols):
+    q = Queue()
+    visited = [False for i in range(rows*cols)]        
+    path = BFS(s, e, visited, q)
+    return path
 
 
 
@@ -767,7 +742,7 @@ def BFS_loop():
                         
                     curr = path[curr]
             button("Refresh", 500, 610, 200, 59, red, red_light, BFS_loop )
-            
+            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
@@ -787,13 +762,61 @@ def BFS_loop():
     py.quit()
     quit()
 
+#############################**************************###############################
 
 
 
 
 
 
+############        ##########         ########       ######################################################
+############ ####### #########  ############## ###############################################
+############ ######## ########  ###############     #####################################
+############ ######### #######     ################# #############################################
+############ ######## ########  ############## ###### ###########################################
+############         #########  ###############     ###############################################
 
+
+
+
+def DFS_starter(window, s, e, rows, cols):
+   
+
+        
+    visited = [False for i in range(rows*cols)]
+
+    stack = []
+
+    
+    path = DFS(window, visited, s, e, stack)
+    return path
+    
+    
+def DFS(window, visited, s, e, stack):
+    parentMap = {} #for storing the vertex parent -- where the path came from to that node
+    stack.append(s)
+    traversal = []
+    while(len(stack)):
+        s = stack[-1]
+        stack.pop()
+        
+        
+        if s.value== e.value:
+            break
+        
+        
+        if ( not visited[s.value]):        
+            # print(s.value, end=" ")
+            traversal.append(s)
+            visited[s.value] = True
+        for node in s.show_connections():
+            if node:
+                if ( not visited[node.value]):
+                    stack.append(node)
+                    parentMap[node] = s
+            
+
+    return parentMap, traversal
 
 
 
@@ -851,7 +874,7 @@ def dfs_loop():
             # if some one of the button is clicked then the it performs the action related to it
             
             if clicked:
-                print(clicked)
+                
                 if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
                     start = True
                     
@@ -933,7 +956,7 @@ def dfs_loop():
                         
                     curr = path[curr]
             button("Refresh", 500, 610, 200, 59, red, red_light, dfs_loop )
-            
+            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
@@ -952,6 +975,268 @@ def dfs_loop():
         clock.tick(60)
     py.quit()
     quit()
+    
+#####################*************************#######################
+
+
+
+########### #################     #######        ######## ##########      #######
+######### ## ############### ##### ########## ########## # ######### #### #######
+#######      ################# ############## ######### ### ######## #### #######
+##### ###### ################### ############ ########       #######     ########
+### ######## ############## ##### ########### ####### ####### ###### #### #######
+############################     ############ ###### ######### ##### ##### ###### 
+
+
+###!!!Important note: The a_star path finding takes the first path it had in the queue if there are two paths with same fScore!!!
+
+
+
+
+def d(current, neighbor):
+    x1, y1 = current.print_row_col()
+    x2, y2 = current.print_row_col()
+    # return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return abs(x2-x1) + abs(y2-y1)
+
+
+def heuristic(node, e):
+    x1, y1 = node.print_row_col()
+    x2, y2 = e.print_row_col()
+    # return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return abs(x2-x1) + abs(y2-y1)
+
+
+
+def a_star(s, e, rows, cols):
+    openSet = PriorityQueue()
+    
+    openSet.put((heuristic(s, e), 0, s))
+    parentMap = {}
+    visited = [False for i in range(rows * cols)]
+    gScore = { i: float('inf') for i in range(rows*cols)}
+    gScore[s.value] = 0
+    traversal = []
+    fScore = { i: float('inf') for i in range(rows*cols)}
+    fScore[s.value] = 0
+    
+    count = 0
+    while not openSet.empty():
+        current = openSet.get()
+        traversal.append(current[2])
+        if current[2] == e:
+            
+            break
+        
+        for neighbor  in current[2].show_connections():
+            if neighbor:
+                tentative_gScore = gScore[current[2].value] + d(current[2], neighbor)
+                
+                # print(tentative_gScore)
+                if tentative_gScore < gScore[neighbor.value]:
+                    
+                    count += 1
+                    parentMap[neighbor] = current[2]
+                    gScore[neighbor.value] = tentative_gScore
+                    fScore[neighbor.value] = gScore[neighbor.value] + heuristic(neighbor, e)
+                    # print(fScore[neighbor.value],  neighbor.print_row_col())
+                    openSet.put((fScore[neighbor.value], count,  neighbor))
+                        
+                    
+                    visited[neighbor.value] = True
+    return parentMap, traversal
+
+
+
+
+def a_star_loop():
+    
+    gridSurface = py.Surface((601, 600))
+    state = True
+    rows = 50
+    cols = 50
+    grid = Grid(rows, cols, gridSurface, 601, 600 )
+    clicked = None
+    run = True
+    once = True
+    complete_first_time = False
+    end = False
+    start = False
+    find = False
+    starting_position = None
+    end_position = None
+    
+    
+    
+    while run:
+        
+        
+        
+        
+        
+            
+        #drawing the grid
+        grid.draw()
+        screen.fill(white)
+        
+        
+              
+        button("Start position", 120, 610, 200, 50, red, red_light)
+        
+        button("End position", 850, 610, 200, 50, red, red_light)
+        
+        
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                run = False
+            if event.type == py.MOUSEBUTTONDOWN:
+                pos = py.mouse.get_pos()
+                clicked = grid.get_cord(pos)
+        
+        
+        
+        
+                
+        
+        if state: #pause button imitator
+            # if some one of the button is clicked then the it performs the action related to it
+            
+            if clicked:
+                
+                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                    start = True
+                    
+                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                    start = False
+                    end = True
+                if end_position and starting_position:
+                    if not once:
+                        if (500 + 200) > pos[0] > 500 and (610 + 50) > pos[1] > 610:
+                            find = True
+                            end = False
+                            
+                
+            if start: # if start is clicked then we can then select some box in the grid and it will be highlighted in red color
+                    grid.select_start(clicked[0], clicked[1])
+                    starting_position = clicked
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()   
+                        
+            elif end: # likewise for the end position but in pink color
+                    grid.select_end(clicked[0], clicked[1]) 
+                    end_position = clicked
+                    if starting_position:
+                        grid.select_start(starting_position[0], starting_position[1])
+                    
+                            
+                    button("Find path", 500, 610, 200, 59, red, red_light)
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()  
+            elif find: # the path finding occurs in here
+                    cubes_ = grid.get_cubes()
+                    
+                    grid.select_start(starting_position[0], starting_position[1])
+                    
+                    diff = WINDOW_WIDTH // 100
+                    # the function returns the dictionary of the path that it took to get the end position but is in reverse order and also the traversal path
+                    path, traversal = a_star(  cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
+                    for i in traversal: #shows the traversal
+                        py.draw.rect(gridSurface, (255, 100, 100), (i.print_row_col()[0] * diff, i.print_row_col()[1] * diff, diff, diff), 1)
+                    
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update()
+                    # starting node
+                    curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+                    curr = path[curr]
+                    grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+                    # to highlight the path 
+                    while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                            
+                            bo = py.draw.rect(gridSurface, (255, 0, 0), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                            if not complete_first_time:
+                                screen.blit(gridSurface, (0, 0))
+                                py.display.update(bo)
+                                py.time.delay(3)
+                                
+                            curr = path[curr]
+                    state = False # to pause the loop---kind of!
+                    
+                    
+                    if not complete_first_time:  
+                        complete_first_time = True
+                        
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+        
+        
+        else:# same function but it just shows the same path but it will show all the path at once 
+                    
+            grid.select_start(starting_position[0], starting_position[1])
+            
+            curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
+            grid.select_end(curr.print_row_col()[0], curr.print_row_col()[1])
+            curr = path[curr]
+            diff = WINDOW_WIDTH // 100
+            while curr != cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1]) ]:
+                    
+                    py.draw.rect(gridSurface, (255, 0, 100), (curr.print_row_col()[0] * diff, curr.print_row_col()[1] * diff, diff, diff), 1)
+                    
+                        
+                    curr = path[curr]
+                    
+            
+            button("Refresh", 500, 610, 200, 59, red, red_light, a_star_loop )
+            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
+            screen.blit(gridSurface, (0, 0))               
+            py.display.update()
+                
+                
+                
+                
+                
+                
+        if once:
+            once = False
+            screen.blit(gridSurface, (0, 0))
+            py.display.update()  
+                 
+        
+         
+        clock.tick(60)
+    py.quit()
+    quit()
+    
+#####################*************************#######################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
