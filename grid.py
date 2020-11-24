@@ -334,10 +334,11 @@ def Bidirectional_loop():
         
         
               
-        button("Start position", 120, 610, 200, 50, red, red_light)
+        button("Start position", 50, 610, 135, 50, red, red_light)
         
-        button("End position", 850, 610, 200, 50, red, red_light)
+        button("End position", 190, 610, 130, 50, red, red_light)
         
+        button("Main Menu", 1000, 610, 110, 50, red, red_light, intro)
         
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -357,10 +358,10 @@ def Bidirectional_loop():
             # if one of the button is clicked then the it performs the action related to it
             if clicked:
                 
-                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                if (50 + 135) > pos[0] > 50 and (610 + 50) > pos[1] > 610:
                     start = True
                     
-                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                if (190 + 130) > pos[0] > 190 and (610 + 50) > pos[1] > 610:
                     start = False
                     end = True
                 if end_position and starting_position:
@@ -519,7 +520,7 @@ def Bidirectional_loop():
                     
                     
             button("Refresh", 500, 610, 200, 59, red, red_light, Bidirectional_loop )
-            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
+            
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
@@ -629,10 +630,11 @@ def BFS_loop():
         
         
               
-        button("Start position", 120, 610, 200, 50, red, red_light)
+        button("Start position", 50, 610, 135, 50, red, red_light)
         
-        button("End position", 850, 610, 200, 50, red, red_light)
+        button("End position", 190, 610, 130, 50, red, red_light)
         
+        button("Main Menu", 1000, 610, 110, 50, red, red_light, intro)
         
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -652,10 +654,10 @@ def BFS_loop():
             # if one of the button is clicked then the it performs the action related to it
             if clicked:
                 
-                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                if (50 + 135) > pos[0] > 50 and (610 + 50) > pos[1] > 610:
                     start = True
                     
-                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                if (190 + 130) > pos[0] > 190 and (610 + 50) > pos[1] > 610:
                     start = False
                     end = True
                 if end_position and starting_position:
@@ -682,8 +684,8 @@ def BFS_loop():
                     screen.blit(gridSurface, (0, 0))
                     py.display.update()  
             elif find: # the path finding occurs in here
-                    cubes_ = grid.get_cubes()
-                    
+                cubes_ = grid.get_cubes()
+                if (starting_position[0] < 50 and starting_position[1] <  50) and (end_position[0] < 50 and end_position[1] < 50):   
                     
                     
                     diff = WINDOW_WIDTH // 100
@@ -726,7 +728,20 @@ def BFS_loop():
                         complete_first_time = True        
                         screen.blit(gridSurface, (0, 0))
                         py.display.update()
-            
+                else:
+                    if (starting_position[0] > 50 or starting_position[1] >  50):
+                        button("Please Select a Starting Position!", 602, 10, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    elif (end_position[0] > 50 or end_position[1] >  50):
+                        button("Please select an End Position!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    else:
+                        button("Please select both Positions!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                        
         else:# same function but it just shows the same path but it will show all the path at once 
                     
             grid.select_start(starting_position[0], starting_position[1])
@@ -742,7 +757,7 @@ def BFS_loop():
                         
                     curr = path[curr]
             button("Refresh", 500, 610, 200, 59, red, red_light, BFS_loop )
-            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
+            
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
@@ -853,10 +868,11 @@ def dfs_loop():
         
         
               
-        button("Start position", 120, 610, 200, 50, red, red_light)
+        button("Start position", 50, 610, 135, 50, red, red_light)
         
-        button("End position", 850, 610, 200, 50, red, red_light)
+        button("End position", 190, 610, 130, 50, red, red_light)
         
+        button("Main Menu", 1000, 610, 110, 50, red, red_light, intro)
         
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -875,10 +891,10 @@ def dfs_loop():
             
             if clicked:
                 
-                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                if (50 + 135) > pos[0] > 50 and (610 + 50) > pos[1] > 610:
                     start = True
                     
-                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                if (190 + 130) > pos[0] > 190 and (610 + 50) > pos[1] > 610:
                     start = False
                     end = True
                 if end_position and starting_position:
@@ -956,7 +972,7 @@ def dfs_loop():
                         
                     curr = path[curr]
             button("Refresh", 500, 610, 200, 59, red, red_light, dfs_loop )
-            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
+            
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
@@ -1081,10 +1097,10 @@ def a_star_loop():
         
         
               
-        button("Start position", 120, 610, 200, 50, red, red_light)
+        button("Start position", 50, 610, 135, 50, red, red_light)
         
-        button("End position", 850, 610, 200, 50, red, red_light)
-        
+        button("End position", 190, 610, 130, 50, red, red_light)
+        button("Main Menu", 1000, 610, 110, 50, red, red_light, intro)
         
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -1103,10 +1119,10 @@ def a_star_loop():
             
             if clicked:
                 
-                if (100 + 200) > pos[0] > 100 and (610 + 50) > pos[1] > 610:
+                if (50 + 135) > pos[0] > 50 and (610 + 50) > pos[1] > 610:
                     start = True
                     
-                if (800 + 200) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                if (190 + 130) > pos[0] > 190 and (610 + 50) > pos[1] > 610:
                     start = False
                     end = True
                 if end_position and starting_position:
@@ -1186,7 +1202,7 @@ def a_star_loop():
                     
             
             button("Refresh", 500, 610, 200, 59, red, red_light, a_star_loop )
-            button("Main Menu", 120, 610, 200, 50, red, red_light, intro)
+            
             screen.blit(gridSurface, (0, 0))               
             py.display.update()
                 
