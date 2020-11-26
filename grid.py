@@ -95,13 +95,13 @@ class Grid:
     
     
     
-    def select_start(self, row, col):
+    def select_start(self, row, col):#get starting position 
         py.draw.rect(self.window, (255, 0, 0), (row * self.dif, col * self.dif, self.dif, self.dif))
         
         
         
 
-    def select_end(self, row, col):
+    def select_end(self, row, col):#get/draw end position
         py.draw.rect(self.window, (255, 153, 153), (row * self.dif, col * self.dif, self.dif, self.dif) )
         
         
@@ -111,7 +111,8 @@ class Grid:
         return self.cubes
     
     
-    
+    def add_blocks(self, row, col):#method to add blocks to the path
+        self.cubes[row][col].block_cell()
     
 
     
@@ -124,12 +125,12 @@ class Cubes:
         self.row = row
         self.column = column
         self.value = None
-        
+        self.blocked = False
     
-    def make_values(self, value):
+    def make_values(self, value):#add value to each cube
         self.value = value
     
-    def make_connections(self, left=None, right=None, up=None, down=None):
+    def make_connections(self, left=None, right=None, up=None, down=None):#make the graph of each cube in the graph
         self.left = left
         self.right = right
         self.up = up
@@ -146,6 +147,16 @@ class Cubes:
         # print(f"row={self.row}, column={self.column}, right={self.right}, left={self.left}, up={self.up}, down={self.down}, value={self.value}")
         return [self.left, self.right, self.up, self.down]
     
+    def block_cell(self):#turns the cube into a blocked cube
+        self.blocked = True
+    
+    
+    def unblock_cell(self):
+        self.blocked = False
+    
+    
+    def get_cell_condition(self):
+        return self.blocked
         
 
 
@@ -318,7 +329,7 @@ def Bidirectional_loop():
     find = False
     starting_position = None
     end_position = None
-    
+    cubes_ = grid.get_cubes()
     
     
     while run:
@@ -388,9 +399,9 @@ def Bidirectional_loop():
                     screen.blit(gridSurface, (0, 0))
                     py.display.update()  
             elif find: # the path finding occurs in here
-                    cubes_ = grid.get_cubes()
                     
                     
+                if (starting_position[0] < 50 and starting_position[1] <  50) and (end_position[0] < 50 and end_position[1] < 50):  
                     
                     diff = WINDOW_WIDTH // 100
                     # the function returns the dictionary of the path that it took to get the end position but is in reverse order and also the traversal path
@@ -458,6 +469,22 @@ def Bidirectional_loop():
                         complete_first_time = True        
                         screen.blit(gridSurface, (0, 0))
                         py.display.update()
+                
+                else:
+                    if (starting_position[0] > 50 or starting_position[1] >  50):
+                        button("Please Select a Starting Position!", 602, 10, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    elif (end_position[0] > 50 or end_position[1] >  50):
+                        button("Please select an End Position!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    else:
+                        button("Please select both Positions!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()       
+                        
+                        
             
         else:# same function but it just shows the same path but it will show all the path at once 
             
@@ -825,7 +852,7 @@ def DFS(window, visited, s, e, stack):
             traversal.append(s)
             visited[s.value] = True
         for node in s.show_connections():
-            if node:
+            if node and not node.get_cell_condition():
                 if ( not visited[node.value]):
                     stack.append(node)
                     parentMap[node] = s
@@ -852,7 +879,10 @@ def dfs_loop():
     find = False
     starting_position = None
     end_position = None
-    
+    make_wall = False
+    diff = WINDOW_WIDTH // 100
+    blocks = []
+    cubes_ = grid.get_cubes()
     
     
     while run:
@@ -873,6 +903,7 @@ def dfs_loop():
         button("End position", 190, 610, 130, 50, red, red_light)
         
         button("Main Menu", 1000, 610, 110, 50, red, red_light, intro)
+        button("Add blocks", 800, 610, 110, 50, red, red_light)
         
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -902,15 +933,31 @@ def dfs_loop():
                         if (500 + 200) > pos[0] > 500 and (610 + 50) > pos[1] > 610:
                             find = True
                             end = False
-                            
-                
+                if (800 + 110) > pos[0] > 800 and (610 + 50) > pos[1] > 610:
+                    start = False
+                    end = False
+                    find = False
+                    make_wall = True       
+            
+            
+            
+            
+            
             if start: # if start is clicked then we can then select some box in the grid and it will be highlighted in red color
+                    if blocks: #showing the blocked boxes
+                        for i in blocks:
+                            py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
+                        
                     grid.select_start(clicked[0], clicked[1])
                     starting_position = clicked
                     screen.blit(gridSurface, (0, 0))
                     py.display.update()   
                         
             elif end: # likewise for the end position but in pink color
+                    if blocks: #showing the blocked boxes
+                        for i in blocks:
+                            py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
+                        
                     grid.select_end(clicked[0], clicked[1]) 
                     end_position = clicked
                     if starting_position:
@@ -921,11 +968,16 @@ def dfs_loop():
                     screen.blit(gridSurface, (0, 0))
                     py.display.update()  
             elif find: # the path finding occurs in here
-                    cubes_ = grid.get_cubes()
+                if blocks: #showing the blocked boxes
+                        for i in blocks:
+                            py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
+                        
+                    
+                if (starting_position[0] < 50 and starting_position[1] <  50) and (end_position[0] < 50 and end_position[1] < 50):  
                     
                     grid.select_start(starting_position[0], starting_position[1])
                     
-                    diff = WINDOW_WIDTH // 100
+                    
                     # the function returns the dictionary of the path that it took to get the end position but is in reverse order and also the traversal path
                     path, traversal = DFS_starter( gridSurface, cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
                     for i in traversal: #shows the traversal
@@ -947,7 +999,7 @@ def dfs_loop():
                                 py.time.delay(3)
                                 
                             curr = path[curr]
-                    state = False # to pause the loop---kind of!
+                    state = False # to stop the same function going through again---kind of!
                     
                     
                     if not complete_first_time:  
@@ -955,10 +1007,36 @@ def dfs_loop():
                         
                         screen.blit(gridSurface, (0, 0))
                         py.display.update()
-        
+                else:
+                    if (starting_position[0] > 50 or starting_position[1] >  50):
+                        button("Please Select a Starting Position!", 602, 10, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    elif (end_position[0] > 50 or end_position[1] >  50):
+                        button("Please select an End Position!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    else:
+                        button("Please select both Positions!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()     
+                        
+            
+            elif make_wall:
+                if (clicked[0] < 50 and clicked[1] <  50):  #to ensure that the clicked has tuple that is on the grid
+                    bo = py.draw.rect(gridSurface, (0, 0, 0), (clicked[0] * diff, clicked[1] * diff, diff, diff))
+                    blocks.append(clicked)
+                    grid.add_blocks(clicked[0], clicked[1])
+                    screen.blit(gridSurface, (0, 0))
+                    py.display.update(bo)
         
         else:# same function but it just shows the same path but it will show all the path at once 
-                    
+            
+            if blocks: #showing the blocked boxes
+                for i in blocks:
+                    py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
+            
+                   
             grid.select_start(starting_position[0], starting_position[1])
             
             curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
@@ -978,8 +1056,7 @@ def dfs_loop():
                 
                 
                 
-                
-                
+       
                 
         if once:
             once = False
@@ -988,7 +1065,7 @@ def dfs_loop():
                  
         
          
-        clock.tick(60)
+        clock.tick(120)
     py.quit()
     quit()
     
@@ -1081,7 +1158,7 @@ def a_star_loop():
     find = False
     starting_position = None
     end_position = None
-    
+    cubes_ = grid.get_cubes()
     
     
     while run:
@@ -1149,8 +1226,8 @@ def a_star_loop():
                     screen.blit(gridSurface, (0, 0))
                     py.display.update()  
             elif find: # the path finding occurs in here
-                    cubes_ = grid.get_cubes()
                     
+                if (starting_position[0] < 50 and starting_position[1] <  50) and (end_position[0] < 50 and end_position[1] < 50):  
                     grid.select_start(starting_position[0], starting_position[1])
                     
                     diff = WINDOW_WIDTH // 100
@@ -1183,7 +1260,19 @@ def a_star_loop():
                         
                         screen.blit(gridSurface, (0, 0))
                         py.display.update()
-        
+                else:
+                    if (starting_position[0] > 50 or starting_position[1] >  50):
+                        button("Please Select a Starting Position!", 602, 10, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    elif (end_position[0] > 50 or end_position[1] >  50):
+                        button("Please select an End Position!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
+                    else:
+                        button("Please select both Positions!", 602, 0, 400, 50, red, red)
+                        screen.blit(gridSurface, (0, 0))
+                        py.display.update()
         
         else:# same function but it just shows the same path but it will show all the path at once 
                     
