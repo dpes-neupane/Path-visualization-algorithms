@@ -1230,15 +1230,15 @@ def dfs_loop():
 def d(current, neighbor):
     x1, y1 = current.print_row_col()
     x2, y2 = current.print_row_col()
-    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    # return abs(x2-x1) + abs(y2-y1)
+    # return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return abs(x2-x1) + abs(y2-y1)
 
 
 def heuristic(node, e):
     x1, y1 = node.print_row_col()
     x2, y2 = e.print_row_col()
-    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    # return abs(x2-x1) + abs(y2-y1)
+    # return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return abs(x2-x1) + abs(y2-y1)
 
 
 
@@ -1254,7 +1254,7 @@ def a_star(s, e, rows, cols):
     fScore = { i: float('inf') for i in range(rows*cols)}
     fScore[s.value] = 0
     
-    count = 0
+    count = 2500
     while not openSet.empty():
         current = openSet.get()
         
@@ -1269,7 +1269,7 @@ def a_star(s, e, rows, cols):
                 # print(tentative_gScore)
                 if tentative_gScore < gScore[neighbor.value]:
                     
-                    count += 1
+                    count -= 1
                     parentMap[neighbor] = current[2]
                     gScore[neighbor.value] = tentative_gScore
                     fScore[neighbor.value] = gScore[neighbor.value] + heuristic(neighbor, e)
