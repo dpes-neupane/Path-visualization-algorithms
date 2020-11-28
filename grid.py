@@ -1409,11 +1409,10 @@ def a_star_loop():
                     # the function returns the dictionary of the path that it took to get the end position but is in reverse order and also the traversal path
                     path, traversal = a_star(  cubes_[ int( starting_position[0]  ) ]  [ int( starting_position[1] ) ]   , cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ], rows, cols)
                     for i in traversal: #shows the traversal
-                        bo = py.draw.rect(gridSurface, (255, 100, 100), (i.print_row_col()[0] * diff, i.print_row_col()[1] * diff, diff, diff), 1)
+                        bo = py.draw.rect(screen, (255, 100, 100), (i.print_row_col()[0] * diff, i.print_row_col()[1] * diff, diff, diff), 1)
                         py.time.delay(5)
                         py.display.update(bo)
-                    screen.blit(gridSurface, (0, 0))
-                    py.display.update()
+                    
                     # starting node
                     curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
                     curr = path[curr]
