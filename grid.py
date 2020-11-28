@@ -1,4 +1,3 @@
-
 from queue import Queue, PriorityQueue
 import pygame as py
 import time
@@ -114,6 +113,8 @@ class Grid:
     def add_blocks(self, row, col):#method to add blocks to the path
         self.cubes[row][col].block_cell()
     
+    def remove_blocks(self, row, col):#method to add blocks to the path
+        self.cubes[row][col].unblock_cell()
 
     
 
@@ -331,8 +332,9 @@ def Bidirectional_loop():
     end_position = None
     cubes_ = grid.get_cubes()
     make_wall = False
+    del_wall = False
     diff = WINDOW_WIDTH // 100
-    blocks = []
+    blocks = {}
     
     while run:
         
@@ -351,8 +353,9 @@ def Bidirectional_loop():
         
         button("End position", 190, 610, 130, 50, red, red_light)
         
-        button("Main Menu", 1000, 610, 110, 50, red, red_light, intro)
+        button("Main Menu", 1070, 610, 110, 50, red, red_light, intro)
         button("Add blocks", 800, 610, 110, 50, red, red_light)
+        button("Remove blocks", 920, 610, 140, 50, red, red_light)
         
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -388,10 +391,18 @@ def Bidirectional_loop():
                     end = False
                     find = False
                     make_wall = True             
+                if (920 + 140) > pos[0] > 920 and (610 + 50) > pos[1] > 610:
+                    start = False
+                    end = False
+                    find = False
+                    make_wall = False
+                    del_wall = True 
+                    
+                
                 
             if start: # if start is clicked then we can then select some box in the grid and it will be highlighted in red color
                 if blocks: #showing the blocked boxes
-                    for i in blocks:
+                    for i in blocks.values():
                         py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
                 grid.select_start(clicked[0], clicked[1])
                 starting_position = clicked
@@ -400,7 +411,7 @@ def Bidirectional_loop():
                         
             elif end: # likewise for the end position but in pink color
                 if blocks: #showing the blocked boxes
-                    for i in blocks:
+                    for i in blocks.values():
                         py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
                 grid.select_end(clicked[0], clicked[1]) 
                 end_position = clicked
@@ -417,7 +428,7 @@ def Bidirectional_loop():
                 if (starting_position[0] < 50 and starting_position[1] <  50) and (end_position[0] < 50 and end_position[1] < 50):  
                     
                     if blocks: #showing the blocked boxes
-                        for i in blocks:
+                        for i in blocks.values():
                             py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
                     screen.blit(gridSurface, (0, 0))
                     py.display.update()
@@ -505,15 +516,36 @@ def Bidirectional_loop():
             elif make_wall:
                 if (clicked[0] < 50 and clicked[1] <  50):  #to ensure that the clicked has tuple that is on the grid
                     bo = py.draw.rect(gridSurface, (0, 0, 0), (clicked[0] * diff, clicked[1] * diff, diff, diff))
-                    blocks.append(clicked)
+                    
+                    blocks[  cubes_[clicked[0]] [clicked[1]].value  ] = clicked
                     grid.add_blocks(clicked[0], clicked[1])
                     screen.blit(gridSurface, (0, 0))
                     py.display.update(bo)            
+            elif del_wall:
+                if (clicked[0] < 50 and clicked[1] <  50):  #to ensure that the clicked has tuple that is on the grid            
+                    if blocks:
+                        try:
+                            del blocks[  cubes_[clicked[0]] [clicked[1]].value  ]
+                            grid.remove_blocks(clicked[0], clicked[1])
+                            for i in blocks.values():
+                                py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
+                            if starting_position and end_position:
+                                button("Find path", 500, 610, 200, 59, red, red_light)
+                                grid.select_start(starting_position[0], starting_position[1])
+                                grid.select_end(end_position[0], end_position[1])
+                            screen.blit(gridSurface, (0, 0))
+                            py.display.update()
+                        except Exception:
+                            pass
+                            
+
                         
-            
+                        
+                        
+                        
         else:# same function but it just shows the same path but it will show all the path at once 
             if blocks: #showing the blocked boxes
-                for i in blocks:
+                for i in blocks.values():
                     py.draw.rect(gridSurface, (0, 0, 0), (i[0] * diff, i[1] * diff, diff, diff))
             grid.select_start(starting_position[0], starting_position[1])
             curr = cubes_[ int( end_position[0] ) ]  [ int(end_position[1]) ]
