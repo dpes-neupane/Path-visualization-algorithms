@@ -17,7 +17,7 @@ Needs pygame module to work!!
 
 ## Bidirectional 
 
-![grab-landing-page](vids/Bidirectional_gif.gif  " Bidirectional ")
+![grab-landing-page](vids/bidirectional_gif.gif  " Bidirectional ")
 
 ## A-star
 
